@@ -1,5 +1,6 @@
 -- Import dkjson library
 local json = require("dkjson")
+local utils = require("utils")
 
 SquareSize = 15
 CellSize = 16
@@ -8,7 +9,10 @@ GridBorderOffset = 1
 Grid = {}
 Timer = love.timer.getTime()
 
-Patterns = json.decode(love.filesystem.read("patterns.json"))
+Patterns = love.filesystem.read("patterns.json")
+Patterns = json.decode(Patterns)
+
+NextStepUpdates = {}
 
 function love.draw()
     love.graphics.setColor(196,196,196,1)
@@ -22,10 +26,10 @@ function love.draw()
     end
     love.graphics.setColor(255,0,0,1)
 
-    for y = 0, GridSize do
-        for x = 0, GridSize do
-            if(Grid[y][x][3]) then
-                love.graphics.rectangle('fill', Grid[y][x][1], Grid[y][x][2],SquareSize,SquareSize)
+    for x = 0, GridSize do
+        for y = 0, GridSize do
+            if(Grid[x][y][3]) then
+                love.graphics.rectangle('fill', Grid[x][y][1], Grid[x][y][2],SquareSize,SquareSize)
             end
         end
     end
@@ -35,24 +39,35 @@ function love.update(dt)
     if(love.timer.getTime() - Timer >= 1) then
         local x = love.math.random(1,GridSize)
         local y = love.math.random(1,GridSize)
-        TurnRectangleOn(x,y)
+        for x = 0, GridSize do
+            for y = 0, GridSize do
+                local currentCellState = Grid[x][y][3]
+                local nextCellState = utils.processCell(x,y,Grid,GridSize)
+                if(not (currentCellState == nextCellState)) then
+                    table.insert(NextStepUpdates, {x,y,nextCellState})
+                end
+            end
+        end
+        utils.updateGrid(Grid, NextStepUpdates)
+        NextStepUpdates = {}
         Timer = love.timer.getTime()
     end
 end
 
-function TurnRectangleOn(x,y)
-    Grid[y][x][3] = true
-end
 
-function TurnRectangleOff(x,y)
-    Grid[y][x][3] = false
+function DrawShape(startX,startY,shapeName)
+    
+    local shape = Patterns[shapeName]
+    for i,j in pairs(shape) do
+        local x,y = j[1], j[2]
+        utils.turnRectangleOn(startX + x, startY + y,Grid)
+    end
 end
 
 function Setup()
     for x = 0 , GridSize do
         Grid[x] = {}
         for y = 0, GridSize do
-            -- love.graphics.rectangle("fill",(CellSize*x)+GridBorderOffset,(CellSize*y)+1,SquareSize, SquareSize)
             Grid[x][y] = {(CellSize*x)+GridBorderOffset,(CellSize*y)+GridBorderOffset, false}
         end
     end
@@ -62,9 +77,7 @@ end
 
 Setup()
 
-Grid[10][10][3] = false
-TurnRectangleOn(10,10)
-
-
-
-
+DrawShape(10,10,"blinker")
+DrawShape(40,10,"beacon")
+-- print(utils.processCell(11,9,Grid,GridSize))
+-- print(Grid[11][9][3])
