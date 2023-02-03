@@ -58,11 +58,21 @@ local function updateGrid(grid, nextStepUpdates)
     end
 end
 
+local function resetGrid(grid, gridSize, startingShape)
+    for x = 0, gridSize do
+        for y = 0, gridSize do
+            turnRectangleOff(x,y,grid)
+        end
+    end
+    DrawShape(23,20,"lightShip")
+end
+
 return {
     countCellNeighbours = countCellNeighbours, 
     cellOutOfGrid = cellOutOfGrid, 
     turnRectangleOff = turnRectangleOff, 
     turnRectangleOn = turnRectangleOn,
     processCell = processCell,
-    updateGrid = updateGrid
+    updateGrid = updateGrid,
+    resetGrid = resetGrid
 }

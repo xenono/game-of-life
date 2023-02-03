@@ -1,0 +1,1 @@
+# Visualization of Game of Life in Lua and Love2D

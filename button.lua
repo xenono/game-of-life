@@ -31,12 +31,21 @@ function Button:draw()
 end
 
 function Button:isClicked(mouseX, mouseY)
+    if not self.isActive then return end
     if mouseX >= self.x and mouseX <= self.x + self.width then
         if mouseY >= self.y and mouseY <= self.y + self.height then
             return true
         end
     end
     return false
+end
+
+function Button:activate()
+    self.isActive = true
+end
+
+function Button:deactivate()
+    self.isActive = false
 end
 
 return Button

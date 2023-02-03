@@ -2,19 +2,19 @@
 local json = require("dkjson")
 local utils = require("utils")
 local button = require("button")
+local dropwdown = require("dropdown")
 
 SquareSize = 15
 CellSize = 16
 GridSize = (800/CellSize) - 1
 GridBorderOffset = 1
 Grid = {}
-Timer = love.timer.getTime()
-
+Timer = love.timer.getTime()    
+IsGameRunning = false
 Patterns = love.filesystem.read("patterns.json")
 Patterns = json.decode(Patterns)
 
 NextStepUpdates = {}
-
 
 -- Setup buttons
 StartBtn = button:new(0,802,"Start",100, true)
@@ -24,6 +24,9 @@ ShapeBtn = button:new(303,802,"Choose Animation",150, true)
 VariationBtn = button:new(454,802,"Choose Game Variation",200, true)
 ExitBtn = button:new(655,802,"Exit",148, true)
 
+
+-- Setup Dropdowns
+ShapeDropdown = dropwdown:new(303,802,{"shape1","shape2"},150,50)
 
 
 function love.draw()
@@ -49,16 +52,21 @@ function love.draw()
     end
     love.graphics.setColor(255,255,255,1)
     
+    -- Draw buttons
     StartBtn:draw()
     StopBtn:draw() 
     ResetBtn:draw()
     ShapeBtn:draw()
     VariationBtn:draw()
     ExitBtn:draw()
+
+    -- Draw dropwdowns
+    ShapeDropdown:draw()
 end
 
 function love.update(dt) 
-    if(love.timer.getTime() - Timer >= 1) then
+    if not IsGameRunning then return end
+    if(love.timer.getTime() - Timer >= 0.5) then
         local x = love.math.random(1,GridSize)
         local y = love.math.random(1,GridSize)
         for x = 0, GridSize do
@@ -79,18 +87,37 @@ end
 function love.mousepressed(x, y, button)
     if button == 1 then
         if StartBtn:isClicked(x,y) then
-            print("start")
+            IsGameRunning = true
+            StartBtn:deactivate()
+            StopBtn:activate()
+            ResetBtn:activate()
+            VariationBtn:deactivate()
+            ShapeBtn:deactivate()
+            ShapeDropdown:deactivate()
+            IsGameRunning = true
         elseif StopBtn:isClicked(x,y) then
-            print("start")
+            StopBtn:deactivate()
+            StartBtn:activate()
+            ResetBtn:deactivate()
+            VariationBtn:activate()
+            ShapeBtn:activate()
+            IsGameRunning = false
         elseif  ResetBtn:isClicked(x,y) then
-            print("reset")
+            Reset()
         elseif  VariationBtn:isClicked(x,y) then 
             print("Variation")
         elseif ShapeBtn:isClicked(x,y) then 
-            print("Shape")
+            ShapeDropdown:toggle()
         elseif ExitBtn:isClicked(x,y) then
-            print("Exit")
+            love.event.quit()
         end
+
+        local isShapeDropDownClicked, shapeName = ShapeDropdown:isItemListClicked(x,y)
+        if isShapeDropDownClicked and shapeName then
+            print(shapeName)
+        end
+        -- if is then
+        -- print("List clicked")
         
 
 
@@ -106,6 +133,11 @@ function DrawShape(startX,startY,shapeName)
         local x,y = j[1], j[2]
         utils.turnRectangleOn(startX + x, startY + y,Grid)
     end
+end
+
+function Reset()
+    NextStepUpdates = {}
+    utils.resetGrid(Grid,GridSize,"lightShip")
 end
 
 function Setup()
@@ -124,5 +156,8 @@ Setup()
 
 DrawShape(10,10,"blinker")
 DrawShape(40,10,"beacon")
+DrawShape(30,30,"lightShip")
+
+Reset()
 -- print(utils.processCell(11,9,Grid,GridSize))
 -- print(Grid[11][9][3])
