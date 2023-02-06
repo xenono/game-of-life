@@ -1,6 +1,5 @@
 -- Import dkjson library
 local json = require("dkjson")
-local utils = require("utils")
 local button = require("button")
 local dropdown = require("dropdown")
 local grid = require("grid")
@@ -59,10 +58,9 @@ function love.mousepressed(x, y, button)
     if button == 1 then
 
         -- Grid click handler
-        if utils.isInGrid(802,802,x,y) then
-            print("In grid")
+        if Grid:isMouseInGrid(x,y) then
+            Grid:activateCellOnClick(x,y)
         end
-            
         -- Buttons click handler
         if StartBtn:isClicked(x,y) then
             IsGameRunning = true
@@ -96,9 +94,7 @@ function love.mousepressed(x, y, button)
             Grid:drawShape(23,20,shapeName)
             CurrentShape = shapeName
         end
-        -- if utils.isInGrid(Grid.width, Grid.height,x,y) then
-        --     print("List clicked")
-        -- end
+        
         
 
 

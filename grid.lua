@@ -36,7 +36,7 @@ function Grid:setup()
     for x = 0 , self.size do
         self.cells[x] = {}
         for y = 0, self.size do
-            self.cells[x][y] = {(self.cellSize * x) + self.border,(self.cellSize * y) + self.cellSize, false}
+            self.cells[x][y] = {(self.cellSize * x) + self.border,(self.cellSize * y) + self.border, false}
         end
     end
 end
@@ -143,6 +143,16 @@ function Grid:drawShape(startX, startY, shapeName)
     end
 end
 
+function Grid:isMouseInGrid(x,y) 
+    if x >= 0 and x <= self.width then
+        if y >= 0 and y <= self.height then
+            return true
+        end
+    end
+    return false
+end
+
+
 function Grid:reset(shape)
     for x = 0, self.size do
         for y = 0, self.size do
@@ -153,6 +163,14 @@ function Grid:reset(shape)
         self:drawShape(23,20,shape)
     end
 end
+
+function Grid:activateCellOnClick(mouseX, mouseY)
+    local cellX = math.floor(mouseX / self.cellSize)
+    local cellY = math.floor(mouseY / self.cellSize)
+
+    self:turnCellOn(cellX, cellY)
+end
+
 
 
 
