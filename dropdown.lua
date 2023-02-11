@@ -55,6 +55,7 @@ function Dropdown:isItemListClicked(mouseX,mouseY)
     for item = 1, self.itemsNum do
         if mouseX >= self.items[item].x and mouseX <= self.items[item].x + self.items[item].width then
             if mouseY >= self.items[item].y and mouseY <= self.items[item].y + self.items[item].height then
+                self:toggle()
                 return true, self.items[item].content
             end
         end

@@ -12,12 +12,12 @@ Grid = grid:new(800,1,16, Patterns)
 
 Timer = love.timer.getTime()    
 
-Game = game:new("Life",Grid, 1)
+Game = game:new("Life",Grid)
 
 -- Setup buttons
 StartBtn = button:new(0,802,"Start",100, true)
 StopBtn = button:new(101,802,"Stop",100, false)
-ResetBtn = button:new(202,802,"Reset",100, false)
+ResetBtn = button:new(202,802,"Reset",100, true)
 ShapeBtn = button:new(303,802,"Choose Animation",150, true)
 VariationBtn = button:new(454,802,"Choose Game Variation",200, true)
 ExitBtn = button:new(655,802,"Exit",148, true)
@@ -51,29 +51,25 @@ function love.update(dt)
         Game:update()
         Timer = love.timer.getTime()
     end
-    
 end
 
 function love.mousepressed(x, y, button)
     if button == 1 then
 
         -- Grid click handler
-        if Game.grid:isMouseInGrid(x,y) then
-            Game.grid:activateCellOnClick(x,y)
-        end
+        Game:handleGridClick(x,y)
+
         -- Buttons click handler
         if StartBtn:isClicked(x,y) then
             Game:start()
             StartBtn:deactivate()
             StopBtn:activate()
-            ResetBtn:activate()
             VariationBtn:deactivate()
             ShapeBtn:deactivate()
             ShapeDropdown:deactivate()
         elseif StopBtn:isClicked(x,y) then
             StopBtn:deactivate()
             StartBtn:activate()
-            ResetBtn:deactivate()
             VariationBtn:activate()
             ShapeBtn:activate()
             Game:stop()
@@ -95,7 +91,7 @@ function love.mousepressed(x, y, button)
         local isVariationDropDownClicked, variationName = VariationDropdown:isItemListClicked(x,y)
         if isVariationDropDownClicked and variationName then
             Game:reset()
-            print(variationName)
+            Game:setVariation(variationName)
         end
         
         

@@ -110,6 +110,11 @@ function Grid:countCellNeighbours(cellX,cellY)
 function Grid:getNextCellState(cellX,cellY) 
     local n = self:countCellNeighbours(cellX,cellY)
     local isCellALive = self.cells[cellX][cellY][3]
+
+    if self.gameVariation == "HighLife" and (not isCellALive and n == 6) then
+        return true
+    end
+
     if (not isCellALive and n == 3) then
         return true
     end

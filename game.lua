@@ -29,6 +29,7 @@ end
 
 function Game:setVariation(variation)
     self.variation = variation
+    Grid:setGameVariation(variation)
 end
 
 function Game:getStatus()
@@ -52,6 +53,12 @@ end
 function Game:reset()
     self.nextStepUpdates = {}
     self.grid:reset(self.currentShape)
+end
+
+function Game:handleGridClick(x,y)
+    if self.grid:isMouseInGrid(x,y) then
+        self.grid:activateCellOnClick(x,y)
+    end
 end
 
 return Game
