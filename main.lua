@@ -3,6 +3,7 @@ local json = require("dkjson")
 local button = require("button")
 local dropdown = require("dropdown")
 local grid = require("grid")
+local game = require("game")
 
 Patterns = love.filesystem.read("patterns.json")
 Patterns = json.decode(Patterns)
@@ -10,11 +11,8 @@ Patterns = json.decode(Patterns)
 Grid = grid:new(800,1,16, Patterns)
 
 Timer = love.timer.getTime()    
-IsGameRunning = false
 
-NextStepUpdates = {}
-
-CurrentShape = "blank"
+Game = game:new("Life",Grid, 1)
 
 -- Setup buttons
 StartBtn = button:new(0,802,"Start",100, true)
@@ -27,10 +25,11 @@ ExitBtn = button:new(655,802,"Exit",148, true)
 
 -- Setup Dropdowns
 ShapeDropdown = dropdown:new(303,802,Patterns["shapes"],150,50)
+VariationDropdown = dropdown:new(454,802,{"Life","HighLife"},200,50)
 
 
 function love.draw()
-    Grid:draw()
+    Game:draw()
 
     -- Draw buttons
     StartBtn:draw()
@@ -42,46 +41,46 @@ function love.draw()
 
     -- Draw dropwdowns
     ShapeDropdown:draw()
+    VariationDropdown:draw()
 end
 
 function love.update(dt) 
-    if not IsGameRunning then return end
+    if Game:getStatus() == 0 then return end 
+
     if(love.timer.getTime() - Timer >= 0.5) then
-        Grid:update(NextStepUpdates)
-        Grid:updateToNextStep(NextStepUpdates)
-        NextStepUpdates = {}
+        Game:update()
         Timer = love.timer.getTime()
     end
+    
 end
 
 function love.mousepressed(x, y, button)
     if button == 1 then
 
         -- Grid click handler
-        if Grid:isMouseInGrid(x,y) then
-            Grid:activateCellOnClick(x,y)
+        if Game.grid:isMouseInGrid(x,y) then
+            Game.grid:activateCellOnClick(x,y)
         end
         -- Buttons click handler
         if StartBtn:isClicked(x,y) then
-            IsGameRunning = true
+            Game:start()
             StartBtn:deactivate()
             StopBtn:activate()
             ResetBtn:activate()
             VariationBtn:deactivate()
             ShapeBtn:deactivate()
             ShapeDropdown:deactivate()
-            IsGameRunning = true
         elseif StopBtn:isClicked(x,y) then
             StopBtn:deactivate()
             StartBtn:activate()
             ResetBtn:deactivate()
             VariationBtn:activate()
             ShapeBtn:activate()
-            IsGameRunning = false
-        elseif  ResetBtn:isClicked(x,y) then
-            Reset()
+            Game:stop()
+        elseif ResetBtn:isClicked(x,y) then
+            Game:reset()
         elseif  VariationBtn:isClicked(x,y) then 
-            print("Variation")
+            VariationDropdown:toggle()
         elseif ShapeBtn:isClicked(x,y) then 
             ShapeDropdown:toggle()
         elseif ExitBtn:isClicked(x,y) then
@@ -90,9 +89,13 @@ function love.mousepressed(x, y, button)
 
         local isShapeDropDownClicked, shapeName = ShapeDropdown:isItemListClicked(x,y)
         if isShapeDropDownClicked and shapeName then
-            Grid:reset(nil)
-            Grid:drawShape(23,20,shapeName)
-            CurrentShape = shapeName
+            Game:setShape(shapeName)
+        end
+
+        local isVariationDropDownClicked, variationName = VariationDropdown:isItemListClicked(x,y)
+        if isVariationDropDownClicked and variationName then
+            Game:reset()
+            print(variationName)
         end
         
         
@@ -101,13 +104,8 @@ function love.mousepressed(x, y, button)
     end
 end
 
-function Reset()
-    NextStepUpdates = {}
-    Grid:reset(CurrentShape)
-end
-
 function Setup()
-    Grid:setup()
+    Game:setup()
     love.window.setTitle("Game of life")
     love.window.setMode(802,852)
 end

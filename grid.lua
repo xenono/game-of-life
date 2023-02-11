@@ -28,7 +28,7 @@ function Grid:new(width,borderOffset,cellSize, patterns)
     grid.endY = grid.startY + grid.height
     grid.cells = {}
     grid.patterns = patterns
-
+    grid.gameVariation = "Life"
     return grid
 end
 
@@ -39,6 +39,10 @@ function Grid:setup()
             self.cells[x][y] = {(self.cellSize * x) + self.border,(self.cellSize * y) + self.border, false}
         end
     end
+end
+
+function Grid:setGameVariation(variation)
+    self.gameVariation = variation
 end
 
 function Grid:draw()
