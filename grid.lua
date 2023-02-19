@@ -1,3 +1,4 @@
+Cell = require("cell")
 Grid = {
     size=nil,
     cells={},
@@ -36,7 +37,7 @@ function Grid:setup()
     for x = 0 , self.size do
         self.cells[x] = {}
         for y = 0, self.size do
-            self.cells[x][y] = {(self.cellSize * x) + self.border,(self.cellSize * y) + self.border, false}
+            self.cells[x][y] = Cell:new(x, y, false, nil)
         end
     end
 end
@@ -61,8 +62,8 @@ function Grid:draw()
 
     for x = 0, self.size do
         for y = 0, self.size do
-            if(self.cells[x][y][3]) then
-                love.graphics.rectangle('fill', self.cells[x][y][1], self.cells[x][y][2], self.squareSize, self.squareSize)
+            if(self.cells[x][y]:getStatus()) then
+                love.graphics.rectangle('fill', self.cellSize * self.cells[x][y].x + self.border , self.cellSize * self.cells[x][y].y + self.border, self.squareSize, self.squareSize)
             end
         end
     end
@@ -70,15 +71,15 @@ function Grid:draw()
 end
 
 function Grid:turnCellOn(x,y)
-    self.cells[x][y][3] = true
+    self.cells[x][y]:turnOn()
 end
 
 function Grid:turnCellOff(x,y)
-    self.cells[x][y][3] = false
+    self.cells[x][y]:turnOff()
 end
 
 function Grid:getCellStatus(x,y)
-    return self.cells[x][y][3]
+    return self.cells[x][y]:getStatus()
 end
 
 function Grid:cellOutOfGrid(cellX, cellY) 
@@ -109,8 +110,7 @@ function Grid:countCellNeighbours(cellX,cellY)
 
 function Grid:getNextCellState(cellX,cellY) 
     local n = self:countCellNeighbours(cellX,cellY)
-    local isCellALive = self.cells[cellX][cellY][3]
-
+    local isCellALive = self.cells[cellX][cellY]:getStatus()
     if self.gameVariation == "HighLife" and (not isCellALive and n == 6) then
         return true
     end
@@ -121,25 +121,24 @@ function Grid:getNextCellState(cellX,cellY)
     if(isCellALive and n < 2) then return false end
     if(isCellALive and n > 3) then return false end
     if(isCellALive and n == 2 or n == 3) then return true end
-    
+    return false;
 end
 
 function Grid:update(nextStepUpdates)
     for x = 0, self.size do
         for y = 0, self.size do
-            local currentCellState = self.cells[x][y][3]
+            local currentCellState = self.cells[x][y]:getStatus()
             local nextCellState = self:getNextCellState(x,y)
             if(not (currentCellState == nextCellState)) then
-                table.insert(nextStepUpdates, {x,y,nextCellState})
+                table.insert(nextStepUpdates, Cell:new(x, y, nextCellState, nil))
             end
         end
     end
 end
 
 function Grid:updateToNextStep(nextStepUpdates) 
-    for i,v in pairs(nextStepUpdates) do
-        local x,y,newCellState = v[1],v[2],v[3]
-        self.cells[x][y][3] = newCellState
+    for _, newCell in pairs(nextStepUpdates) do
+        self.cells[newCell.x][newCell.y]:setStatus(newCell:getStatus())
     end
 end
 
