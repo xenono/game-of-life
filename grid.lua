@@ -10,7 +10,9 @@ Grid = {
     endY=nil,
     width=nil,
     height=nil,
-    patterns=nil
+    patterns=nil,
+    baseColor=nil,
+    secondaryColor=nil
 }
 Grid.__index = Grid
 
@@ -30,6 +32,8 @@ function Grid:new(width,borderOffset,cellSize, patterns)
     grid.cells = {}
     grid.patterns = patterns
     grid.gameVariation = "Life"
+    grid.baseColor = {255,0,0}
+    grid.secondaryColor = {0,0,255}
     return grid
 end
 
@@ -37,7 +41,7 @@ function Grid:setup()
     for x = 0 , self.size do
         self.cells[x] = {}
         for y = 0, self.size do
-            self.cells[x][y] = Cell:new(x, y, false, nil)
+            self.cells[x][y] = Cell:new(x, y, false, {0,0,0})
         end
     end
 end
@@ -58,20 +62,20 @@ function Grid:draw()
     end
     love.graphics.line(0,802,802,802)
 
-    love.graphics.setColor(255,0,0,1)
 
     for x = 0, self.size do
         for y = 0, self.size do
             if(self.cells[x][y]:getStatus()) then
+                local r,g,b = self.cells[x][y]:getColor()
+                love.graphics.setColor(love.math.colorFromBytes(r,g,b))
                 love.graphics.rectangle('fill', self.cellSize * self.cells[x][y].x + self.border , self.cellSize * self.cells[x][y].y + self.border, self.squareSize, self.squareSize)
             end
         end
     end
-    love.graphics.setColor(255,255,255,1)
 end
 
-function Grid:turnCellOn(x,y)
-    self.cells[x][y]:turnOn()
+function Grid:turnCellOn(x,y,color)
+    self.cells[x][y]:turnOn(color)
 end
 
 function Grid:turnCellOff(x,y)
@@ -83,14 +87,14 @@ function Grid:getCellStatus(x,y)
 end
 
 function Grid:cellOutOfGrid(cellX, cellY) 
-    if(cellX > self.size or cellX < 0) then return true end
-    if(cellY > self.size or cellY < 0) then return true end
+    if(cellX >= self.size or cellX <= 0) then return true end
+    if(cellY >= self.size or cellY <= 0) then return true end
     return false
 end
 
 function Grid:countCellNeighbours(cellX,cellY)
         local numOfNeighbours = 0 
-    
+        local neighboursColors = {}
         for x = cellX-1, cellX+1 do
             for y = cellY-1, cellY + 1 do
                 if(x == cellX and y == cellY) then goto continue end
@@ -99,38 +103,53 @@ function Grid:countCellNeighbours(cellX,cellY)
     
                 if(self:getCellStatus(x,y)) then
                     numOfNeighbours = numOfNeighbours + 1
+                    table.insert(neighboursColors, {self.cells[x][y]:getColor()})
                 end
                 
                 ::continue::
             end
         end
     
-        return numOfNeighbours
+        return numOfNeighbours, neighboursColors
     end
 
+function Grid:getNextColorCell(neighboursColors)
+    local r,g,b = 0,0,0
+    for i = 1, 3 do
+        r = r +neighboursColors[i][1]
+        g = g + neighboursColors[i][2]
+        b = b + neighboursColors[i][3]
+    end
+
+    return {r/3,g/3,b/3}
+end
 function Grid:getNextCellState(cellX,cellY) 
-    local n = self:countCellNeighbours(cellX,cellY)
+    local n, neighboursColors = self:countCellNeighbours(cellX,cellY)
     local isCellALive = self.cells[cellX][cellY]:getStatus()
     if self.gameVariation == "HighLife" and (not isCellALive and n == 6) then
         return true
     end
 
     if (not isCellALive and n == 3) then
-        return true
+        if(self.gameVariation == "The Rainbow Game") then
+            local color = self:getNextColorCell(neighboursColors)
+            return true, color
+        end
+        return true, self.baseColor;
     end
-    if(isCellALive and n < 2) then return false end
-    if(isCellALive and n > 3) then return false end
-    if(isCellALive and n == 2 or n == 3) then return true end
-    return false;
+    if(isCellALive and n < 2) then return false, self.baseColor; end
+    if(isCellALive and n > 3) then return false, self.baseColor; end
+    if(isCellALive and n == 2 or n == 3) then return true, self.baseColor; end
+    return false, self.baseColor;
 end
 
 function Grid:update(nextStepUpdates)
     for x = 0, self.size do
         for y = 0, self.size do
             local currentCellState = self.cells[x][y]:getStatus()
-            local nextCellState = self:getNextCellState(x,y)
+            local nextCellState, nextColor = self:getNextCellState(x,y)
             if(not (currentCellState == nextCellState)) then
-                table.insert(nextStepUpdates, Cell:new(x, y, nextCellState, nil))
+                table.insert(nextStepUpdates, Cell:new(x, y, nextCellState, nextColor))
             end
         end
     end
@@ -138,7 +157,7 @@ end
 
 function Grid:updateToNextStep(nextStepUpdates) 
     for _, newCell in pairs(nextStepUpdates) do
-        self.cells[newCell.x][newCell.y]:setStatus(newCell:getStatus())
+        self.cells[newCell.x][newCell.y] = newCell
     end
 end
 
@@ -147,13 +166,21 @@ function Grid:drawShape(startX, startY, shapeName)
 
     for i,j in pairs(shape) do
         local x,y = j[1], j[2]
-        self:turnCellOn(startX + x, startY + y)
+        if(self.gameVariation == "The Rainbow Game") then
+            local r = math.random(0,255)
+            local g = math.random(0,255)
+            local b = math.random(0,255)
+            self:turnCellOn(startX + x, startY + y, {r,g,b})
+            ::continue::
+        else
+            self:turnCellOn(startX + x, startY + y, self.baseColor)
+        end
     end
 end
 
 function Grid:isMouseInGrid(x,y) 
-    if x >= 0 and x <= self.width then
-        if y >= 0 and y <= self.height then
+    if x > 0 and x < self.width then
+        if y > 0 and y < self.height then
             return true
         end
     end
@@ -172,11 +199,15 @@ function Grid:reset(shape)
     end
 end
 
-function Grid:activateCellOnClick(mouseX, mouseY)
+function Grid:activateCellOnClick(mouseX, mouseY, isRpmClicked)
     local cellX = math.floor(mouseX / self.cellSize)
     local cellY = math.floor(mouseY / self.cellSize)
 
-    self:turnCellOn(cellX, cellY)
+    if(isRpmClicked) then
+        self:turnCellOn(cellX, cellY, self.secondaryColor)
+    else
+        self:turnCellOn(cellX, cellY, self.baseColor)
+    end
 end
 
 

@@ -8,9 +8,8 @@ function Button:new(x,y, text, size, isActive)
     btn.y = y
     btn.width = size
     btn.height = 50
-    local font = love.graphics.newFont(12,"normal",100)
+    local font = love.graphics.newFont(12,"normal",200)
     btn.text = love.graphics.newText(font, text)
-    btn.content = text
     btn.isActive = isActive
     return btn
 end
@@ -26,6 +25,7 @@ function Button:draw()
         love.graphics.setColor(0,0,0,1)
     end
 
+    -- Draw text in the middle of the button
     love.graphics.draw(self.text, self.x + (self.width/2) - (self.text.getWidth(self.text)/2),self.y + (self.height/2)-(self.text.getHeight(self.text)/2))
     
 end

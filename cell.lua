@@ -14,17 +14,19 @@ function Cell:new(x, y, isActive, color)
   cell.x = x
   cell.y = y
   cell.isActive = isActive
-  cell.color = color
+  cell.color = color or {255,0,0}
 
   return cell
 end
 
-function Cell:turnOn()
+function Cell:turnOn(color)
   self.isActive = true;
+  self:setColor(color)
 end
 
 function Cell:turnOff()
   self.isActive = false;
+  self:setColor({0,0,0})
 end
 
 function Cell:getStatus()
@@ -35,6 +37,13 @@ function Cell:setStatus(newStatus)
   self.isActive = newStatus
 end
 
+function Cell:setColor(color)
+  self.color = color
+end
+
+function Cell:getColor()
+  return self.color[1], self.color[2], self.color[3]
+end
 
 return Cell
 

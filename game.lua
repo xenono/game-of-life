@@ -1,7 +1,9 @@
-Game = {variation=nil, grid=nil, status=nil, currentShape=nil, nextStepUpdates=nil}
+local ui = require("ui")
+
+Game = {variation=nil, grid=nil, status=nil, currentShape=nil, nextStepUpdates=nil, ui=nil}
 Game.__index = Game
 
-function Game:new(variation, grid)
+function Game:new(variation, grid, data)
     local game = {}
     setmetatable(game, Game)
     game.variation = variation
@@ -9,6 +11,7 @@ function Game:new(variation, grid)
     game.status = 0
     game.currentShape = "blank"
     game.nextStepUpdates = {}
+    game.ui = ui:new(variation,data)
     return game
 end
 
@@ -19,6 +22,7 @@ end
 
 function Game:draw()
     self.grid:draw()
+    self.ui:draw()
 end
 
 function Game:update(nextStepUpdates)
@@ -29,11 +33,17 @@ end
 
 function Game:setVariation(variation)
     self.variation = variation
-    Grid:setGameVariation(variation)
+    self.grid:setGameVariation(variation)
+    self.ui:setVariation(variation)
 end
 
 function Game:getStatus()
     return self.status
+end
+
+
+function Game:getVariation()
+    return self.variation
 end
 
 function Game:start()
@@ -55,9 +65,9 @@ function Game:reset()
     self.grid:reset(self.currentShape)
 end
 
-function Game:handleGridClick(x,y)
+function Game:handleGridClick(x,y, isRpmClick)
     if self.grid:isMouseInGrid(x,y) then
-        self.grid:activateCellOnClick(x,y)
+        self.grid:activateCellOnClick(x,y, isRpmClick)
     end
 end
 
