@@ -34,7 +34,7 @@ function UI:setVariation(variation)
   self.variationName = love.graphics.newText(self.mediumFont, "Variation: " .. variation)
   local extraInfoText = "Press LPM on the grid to activate the cell."
   if(variation == "The Rainbow Game") then
-    extraInfoText = "Press LPM on the grid to activate the cell with Red Color\n\nPress RPM to activate it with Blue Color"
+    extraInfoText = "Press LPM on the grid to activate the cell with Red Color\n\nPress RPM to activate it with Blue Color\n\nAvaiable shapes are drawn with random colors."
   end
 
   self.extraInfo = love.graphics.newText(self.normalFont, extraInfoText)

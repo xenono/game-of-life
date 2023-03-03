@@ -35,6 +35,8 @@ function Game:setVariation(variation)
     self.variation = variation
     self.grid:setGameVariation(variation)
     self.ui:setVariation(variation)
+    self.grid:reset()
+    self.grid:drawShape(20,20,self.currentShape)
 end
 
 function Game:getStatus()
@@ -56,7 +58,7 @@ end
 
 function Game:setShape(newShape)
     self.grid:reset()
-    self.grid:drawShape(23,20,newShape)
+    self.grid:drawShape(20,20,newShape)
     self.currentShape = newShape
 end
 

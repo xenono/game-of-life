@@ -187,7 +187,6 @@ function Grid:isMouseInGrid(x,y)
     return false
 end
 
-
 function Grid:reset(shape)
     for x = 0, self.size do
         for y = 0, self.size do
@@ -195,7 +194,7 @@ function Grid:reset(shape)
         end
     end
     if shape then
-        self:drawShape(23,20,shape)
+        self:drawShape(20,20,shape)
     end
 end
 
