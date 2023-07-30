@@ -8,7 +8,7 @@ function Button:new(x,y, text, size, isActive)
     btn.y = y
     btn.width = size
     btn.height = 50
-    local font = love.graphics.newFont(12,"normal",200)
+    local font = love.graphics.newFont("font.ttf", 12,"normal",200)
     btn.text = love.graphics.newText(font, text)
     btn.isActive = isActive
     return btn

@@ -4,9 +4,9 @@ UI.__index = UI
 function UI:new(variation, data)
   local ui = {}
   setmetatable(ui, UI)
-  ui.bigFont = love.graphics.newFont(20,"normal",200)
-  ui.mediumFont = love.graphics.newFont(16,"normal",200)
-  ui.normalFont = love.graphics.newFont(13,"normal",200)
+  ui.bigFont = love.graphics.newFont("font.ttf", 20,"normal",100)
+  ui.mediumFont = love.graphics.newFont("font.ttf", 16,"normal",100)
+  ui.normalFont = love.graphics.newFont("font.ttf", 13,"normal",100)
   ui.title = love.graphics.newText(ui.bigFont, "Game Of Life")
   ui.ruleTitle = love.graphics.newText(ui.bigFont, "Rules")
   ui.data = data
